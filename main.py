@@ -3,6 +3,7 @@ import sys
 from PySide6.QtWidgets import QMainWindow, QApplication
 
 from design import Ui_MainWindow
+from main_viewmodel import MainViewModel
 
 
 class GeometryWizard(QMainWindow):
@@ -13,6 +14,8 @@ class GeometryWizard(QMainWindow):
 
         self.setCentralWidget(self.ui.tabWidget)
         self.setFixedSize(600, 550)
+
+        self.viewModel = MainViewModel()
 
 
 if __name__ == "__main__":

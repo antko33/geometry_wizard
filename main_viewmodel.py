@@ -42,6 +42,8 @@ class MainViewModel:
         self.__calculate_center_of_gravity()
         self.__calculate_moments_of_inertia()
         self.__calculate_section_modulus()
+        self.i_x = math.sqrt(self.j_x / self.a)
+        self.i_y = math.sqrt(self.j_y / self.a)
         self.__calculate_dimensions()
 
     # Определение координат точек профиля для дальнейших расчетов
@@ -198,6 +200,7 @@ class MainViewModel:
         # Делим на 12 и берем абсолютное значение
         self.j_x = abs(j_x) / 12 / 10000  # переводим в см⁴
         self.j_y = abs(j_y) / 12 / 10000  # переводим в см⁴
+        self.j_p = self.j_x + self.j_y
 
         # Перенос моментов инерции к центральным осям (если нужно)
         # Jx_c = Jx - A * yc²

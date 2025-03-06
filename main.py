@@ -11,9 +11,7 @@ class GeometryWizard(QMainWindow):
         super(GeometryWizard, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        self.setCentralWidget(self.ui.tabWidget)
-        self.setFixedSize(600, 550)
+        self.setFixedSize(490, 340)
 
         self.viewModel = MainViewModel()
 
@@ -21,27 +19,27 @@ class GeometryWizard(QMainWindow):
 
     def __run_calculations(self):
         self.viewModel.l_st = float(self.ui.lStText.text())
-        self.viewModel.l_ot = float(self.ui.iOtText.text())  # TODO: Typo
+        self.viewModel.l_ot = float(self.ui.lOtTex.text())
         self.viewModel.r_vn = float(self.ui.rVnText.text())
         self.viewModel.t = float(self.ui.tText.text())
 
         self.viewModel.calculate_parameters()
 
-        self.ui.rOsText.setText(str(self.viewModel.r_os))
-        self.ui.aText.setText(str(self.viewModel.a))
-        self.ui.sXText.setText(str(self.viewModel.s_x))
-        self.ui.sYText.setText(str(self.viewModel.s_y))
-        self.ui.xCText.setText(str(self.viewModel.x_c))
-        self.ui.yCText.setText(str(self.viewModel.y_c))
-        self.ui.jXText.setText(str(self.viewModel.j_x))
-        self.ui.jYText.setText(str(self.viewModel.j_y))
-        self.ui.jPText.setText(str(self.viewModel.j_p))
-        self.ui.wXText.setText(str(self.viewModel.w_x))
-        self.ui.wYText.setText(str(self.viewModel.w_y))
-        self.ui.iXText.setText(str(self.viewModel.i_x))
-        self.ui.iYText.setText(str(self.viewModel.i_y))
-        self.ui.hText.setText(str(self.viewModel.h))
-        self.ui.bText.setText(str(self.viewModel.b))
+        self.ui.rOsText.setText(f'{self.viewModel.r_os:.4f}')
+        self.ui.aText.setText(f'{self.viewModel.a:.4f}')
+        self.ui.sXText.setText(f'{self.viewModel.s_x:.4f}')
+        self.ui.sYText.setText(f'{self.viewModel.s_y:.4f}')
+        self.ui.xCText.setText(f'{self.viewModel.x_c:.4f}')
+        self.ui.yCText.setText(f'{self.viewModel.y_c:.4f}')
+        self.ui.jXText.setText(f'{self.viewModel.j_x:.4f}')
+        self.ui.jYText.setText(f'{self.viewModel.j_y:.4f}')
+        self.ui.jPText.setText(f'{self.viewModel.j_p:.4f}')
+        self.ui.wXText.setText(f'{self.viewModel.w_x:.4f}')
+        self.ui.wYText.setText(f'{self.viewModel.w_y:.4f}')
+        self.ui.iXText.setText(f'{self.viewModel.i_x:.4f}')
+        self.ui.iYText.setText(f'{self.viewModel.i_y:.4f}')
+        self.ui.hText.setText(f'{self.viewModel.h:.4f}')
+        self.ui.bText.setText(f'{self.viewModel.b:.4f}')
 
 
 if __name__ == "__main__":

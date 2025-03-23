@@ -8,6 +8,80 @@ from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
 
 
+def generate_arc_by_radius(p1, p2, radius, direction='cw', n_points=500):
+    x1, y1 = p1.x, p1.y
+    x2, y2 = p2.x, p2.y
+    dx, dy = x2 - x1, y2 - y1
+    chord_len = math.hypot(dx, dy)
+
+    # Проверка: можно ли построить окружность с таким радиусом
+    if chord_len > 2 * radius:
+        raise ValueError("Радиус слишком мал: не удаётся построить окружность через 2 точки.")
+
+    # Середина хорды
+    mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+
+    # Расстояние от середины хорды до центра окружности
+    h = math.sqrt(radius ** 2 - (chord_len / 2) ** 2)
+
+    # Нормаль к хорде
+    nx, ny = -dy / chord_len, dx / chord_len
+
+    # Центр окружности: два возможных решения (влево/вправо от хорды)
+    if direction == 'ccw':
+        cx, cy = mx + nx * h, my + ny * h
+    elif direction == 'cw':
+        cx, cy = mx - nx * h, my - ny * h
+    else:
+        raise ValueError("direction должен быть 'ccw' или 'cw'")
+
+    # Углы на окружности
+    angle1 = math.atan2(y1 - cy, x1 - cx)
+    angle2 = math.atan2(y2 - cy, x2 - cx)
+
+    # Упорядочим углы
+    if direction == 'ccw' and angle2 < angle1:
+        angle2 += 2 * math.pi
+    elif direction == 'cw' and angle2 > angle1:
+        angle2 -= 2 * math.pi
+
+    # Углы точек
+    angles = np.linspace(angle1, angle2, n_points)
+    arc_points = [(cx + radius * math.cos(a), cy + radius * math.sin(a)) for a in angles]
+
+    return arc_points
+
+
+def interpolate_line(p1, p2, n_points=10):
+    """
+    Возвращает n_points точек на прямом отрезке от p1 до p2, включая сами точки.
+
+    :param p1: tuple (x1, y1) — начальная точка
+    :param p2: tuple (x2, y2) — конечная точка
+    :param n_points: сколько точек нужно (включая начальную и конечную)
+    :return: список кортежей [(x, y), ...]
+    """
+    x1, y1 = p1.x, p1.y
+    x2, y2 = p2.x, p2.y
+    points = [
+        (x1 + (x2 - x1) * t, y1 + (y2 - y1) * t)
+        for t in [i / (n_points - 1) for i in range(n_points)]
+    ]
+    return points
+
+
+def visualize(line: LineString, size=6):
+    x, y = line.xy
+
+    # Рисуем
+    plt.figure(figsize=(size, size))
+    plt.plot(x, y, '-', color='blue', linewidth=2)
+    # plt.scatter(x, y, color='red')  # точки, по которым проходит линия
+    plt.axis('equal')
+    plt.grid(True)
+    plt.show()
+
+
 class CalculationsModule:
     def __init__(self):
         self.t = 0
@@ -66,21 +140,21 @@ class CalculationsModule:
 
         alpha3 = math.pi + alpha2
 
-        centerx = cx + r * math.cos(alpha3)
-        centery = cy + r * math.sin(alpha3)
+        center_x = cx + r * math.cos(alpha3)
+        center_y = cy + r * math.sin(alpha3)
 
         beta = alpha2 - self.__alpha2
 
-        dx = centerx + r * math.cos(beta)
-        dy = centery + r * math.sin(beta)
+        dx = center_x + r * math.cos(beta)
+        dy = center_y + r * math.sin(beta)
 
         ex = dx + self.l_ot * math.sin(beta)
         ey = dy - self.l_ot * math.cos(beta)
 
-        points_ab = [(ax, ay)] + self.__generate_arc_by_radius(Point(ax, ay), Point(bx, by), r) + [(bx, by)]
-        points_bc = [(bx, by)] + self.__interpolate_line(Point(bx, by), Point(cx, cy)) + [(cx, cy)]
-        points_cd = [(cx, cy)] + self.__generate_arc_by_radius(Point(cx, cy), Point(dx, dy), r) + [(dx, dy)]
-        points_de = [(dx, dy)] + self.__interpolate_line(Point(dx, dy), Point(ex, ey)) + [(ex, ey)]
+        points_ab = [(ax, ay)] + generate_arc_by_radius(Point(ax, ay), Point(bx, by), r) + [(bx, by)]
+        points_bc = [(bx, by)] + interpolate_line(Point(bx, by), Point(cx, cy)) + [(cx, cy)]
+        points_cd = [(cx, cy)] + generate_arc_by_radius(Point(cx, cy), Point(dx, dy), r) + [(dx, dy)]
+        points_de = [(dx, dy)] + interpolate_line(Point(dx, dy), Point(ex, ey)) + [(ex, ey)]
 
         points = points_ab + points_bc + points_cd + points_de
 
@@ -93,105 +167,49 @@ class CalculationsModule:
         # Получим контур полигона как список точек
         contour_right = list(profile.exterior.coords)
         contour_left = [(-x, y) for (x, y) in contour_right]
-        self.__points = contour_left + contour_right
 
         merged = unary_union([Polygon(contour_left), Polygon(contour_right)])
         self.__poly = Polygon(merged)
+        self.__points = self.__poly.exterior.coords
 
     def __calculate_area(self):
-        self.a = self.__poly.area / 100
-        print(self.a)
-        # """Расчет площади поперечного сечения"""
-        # # 1. Прямоугольник стенки
-        # a1 = self.l_st * self.t
-        #
-        # # 2. Прямоугольник отгиба
-        # a2 = self.l_ot * self.t
-        #
-        # # 3. Центральный гиб
-        # alpha11 = math.pi - self.__alpha1
-        # a3 = alpha11 / 2 * ((self.r_vn + self.t) ** 2 - self.r_vn ** 2)
-        #
-        # # 4. Боковой гиб
-        # a4 = self.__alpha2 / 2 * ((self.r_vn + self.t) ** 2 - self.r_vn ** 2)
-        #
-        # self.a = (2 * a1 + 2 * a2 + a3 + 2 * a4) / 100  # переводим в см²
-        # print(self.a)
-        # print(f"Дуга верхняя {a3}")
-        # print(f"Стенка {a1}")
-        # print(f"Дуга нижняя {a4}")
-        # print(f"Отгиб {a2}")
+        self.a = self.__poly.area / 100  # переводим в см²
 
     def __calculate_static_moments(self):
-        """Расчет статических моментов площади поперечного сечения"""
-        # Метод: разбиваем на простые фигуры, находим статические моменты каждой,
-        # и суммируем с учетом положения каждой фигуры
+        x, y = self.__poly.exterior.xy
 
-        # Для простоты будем использовать метод интегрирования по контуру (метод Грина)
-        # Формула: Sx = ∫y dA, Sy = ∫x dA
+        s_x = 0.0
+        s_y = 0.0
 
-        points = np.array(self.__points)
-        x = points[:, 0]
-        y = points[:, 1]
+        for i in range(len(x) - 1):
+            common_term = x[i] * y[i + 1] - x[i + 1] * y[i]
+            s_x += (y[i] + y[i + 1]) * common_term
+            s_y += (x[i] + x[i + 1]) * common_term
 
-        # Используем формулу площади многоугольника
-        # A = 0.5 * |∑(x_i * y_{i+1} - x_{i+1} * y_i)|
-
-        # Для статических моментов используем:
-        # Sx = 1/6 * ∑[(y_i + y_{i+1}) * (x_i * y_{i+1} - x_{i+1} * y_i)]
-        # Sy = 1/6 * ∑[(x_i + x_{i+1}) * (x_i * y_{i+1} - x_{i+1} * y_i)]
-
-        s_x = 0
-        s_y = 0
-
-        n = len(points)
-        for i in range(n):
-            j = (i + 1) % n
-            s_x += (y[i] + y[j]) * (x[i] * y[j] - x[j] * y[i])
-            s_y += (x[i] + x[j]) * (x[i] * y[j] - x[j] * y[i])
-
-        # Делим на 6 и берем абсолютное значение
-        self.s_x = abs(s_x) / 6 / 1000  # переводим в см³
-        self.s_y = abs(s_y) / 6 / 1000  # переводим в см³
+        self.s_x = abs(s_x) / 6 / 1000
+        self.s_y = abs(s_y) / 6 / 1000
 
     def __calculate_center_of_gravity(self):
-        """Расчет координат центра тяжести"""
-        # Формулы: xc = Sy/A, yc = Sx/A
-        self.x_c = self.s_y / self.a  # см
-        self.y_c = self.s_x / self.a  # см
+        self.x_c = self.__poly.centroid.x / 10
+        self.y_c = self.__poly.centroid.y / 10
 
     def __calculate_moments_of_inertia(self):
-        """Расчет осевых моментов инерции"""
-        # Метод: разбиваем на простые фигуры, находим моменты инерции каждой,
-        # и суммируем с учетом положения каждой фигуры относительно центра тяжести
+        x, y = self.__poly.exterior.xy
 
-        # Для осевых моментов инерции используем:
-        # Jx = 1/12 * ∑[(y_i² + y_i*y_{i+1} + y_{i+1}²) * (x_i*y_{i+1} - x_{i+1}*y_i)]
-        # Jy = 1/12 * ∑[(x_i² + x_i*x_{i+1} + x_{i+1}²) * (x_i*y_{i+1} - x_{i+1}*y_i)]
+        i_x = 0.0
+        i_y = 0.0
 
-        points = np.array(self.__points)
-        x = points[:, 0]
-        y = points[:, 1]
+        for i in range(len(x) - 1):
+            common = x[i] * y[i + 1] - x[i + 1] * y[i]
+            i_x += common * (y[i] ** 2 + y[i] * y[i + 1] + y[i + 1] ** 2)
+            i_y += common * (x[i] ** 2 + x[i] * x[i + 1] + x[i + 1] ** 2)
 
-        j_x = 0
-        j_y = 0
+        self.j_x = abs(i_x) / 12 / 10000
+        self.j_y = abs(i_y) / 12 / 10000
 
-        n = len(points)
-        for i in range(n):
-            j = (i + 1) % n
-            j_x += (y[i] ** 2 + y[i] * y[j] + y[j] ** 2) * (x[i] * y[j] - x[j] * y[i])
-            j_y += (x[i] ** 2 + x[i] * x[j] + x[j] ** 2) * (x[i] * y[j] - x[j] * y[i])
-
-        # Делим на 12 и берем абсолютное значение
-        self.j_x = abs(j_x) / 12 / 10000  # переводим в см⁴
-        self.j_y = abs(j_y) / 12 / 10000  # переводим в см⁴
-        self.j_p = self.j_x + self.j_y
-
-        # Перенос моментов инерции к центральным осям (если нужно)
-        # Jx_c = Jx - A * yc²
-        # Jy_c = Jy - A * xc²
         self.j_x = self.j_x - self.a * (self.y_c ** 2)
         self.j_y = self.j_y - self.a * (self.x_c ** 2)
+        self.j_p = self.j_x + self.j_y
 
     def __calculate_section_modulus(self):
         """Расчет моментов сопротивления"""
@@ -218,74 +236,3 @@ class CalculationsModule:
 
         self.h = max(y) - min(y)  # мм
         self.b = max(x) - min(x)  # мм
-
-    def __generate_arc_by_radius(self, p1, p2, radius, direction='cw', n_points=500):
-        x1, y1 = p1.x, p1.y
-        x2, y2 = p2.x, p2.y
-        dx, dy = x2 - x1, y2 - y1
-        chord_len = math.hypot(dx, dy)
-
-        # Проверка: можно ли построить окружность с таким радиусом
-        if chord_len > 2 * radius:
-            raise ValueError("Радиус слишком мал: не удаётся построить окружность через 2 точки.")
-
-        # Середина хорды
-        mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-
-        # Расстояние от середины хорды до центра окружности
-        h = math.sqrt(radius ** 2 - (chord_len / 2) ** 2)
-
-        # Нормаль к хорде
-        nx, ny = -dy / chord_len, dx / chord_len
-
-        # Центр окружности: два возможных решения (влево/вправо от хорды)
-        if direction == 'ccw':
-            cx, cy = mx + nx * h, my + ny * h
-        elif direction == 'cw':
-            cx, cy = mx - nx * h, my - ny * h
-        else:
-            raise ValueError("direction должен быть 'ccw' или 'cw'")
-
-        # Углы на окружности
-        angle1 = math.atan2(y1 - cy, x1 - cx)
-        angle2 = math.atan2(y2 - cy, x2 - cx)
-
-        # Упорядочим углы
-        if direction == 'ccw' and angle2 < angle1:
-            angle2 += 2 * math.pi
-        elif direction == 'cw' and angle2 > angle1:
-            angle2 -= 2 * math.pi
-
-        # Углы точек
-        angles = np.linspace(angle1, angle2, n_points)
-        arc_points = [(cx + radius * math.cos(a), cy + radius * math.sin(a)) for a in angles]
-
-        return arc_points
-
-    def __interpolate_line(self, p1, p2, n_points=10):
-        """
-        Возвращает n_points точек на прямом отрезке от p1 до p2, включая сами точки.
-
-        :param p1: tuple (x1, y1) — начальная точка
-        :param p2: tuple (x2, y2) — конечная точка
-        :param n_points: сколько точек нужно (включая начальную и конечную)
-        :return: список кортежей [(x, y), ...]
-        """
-        x1, y1 = p1.x, p1.y
-        x2, y2 = p2.x, p2.y
-        points = [
-            (x1 + (x2 - x1) * t, y1 + (y2 - y1) * t)
-            for t in [i / (n_points - 1) for i in range(n_points)]
-        ]
-        return points
-
-    def __visualize(self, line: LineString, size=6):
-        x, y = line.xy
-
-        # Рисуем
-        plt.figure(figsize=(size, size))
-        plt.plot(x, y, '-', color='blue', linewidth=2)
-        # plt.scatter(x, y, color='red')  # точки, по которым проходит линия
-        plt.axis('equal')
-        plt.grid(True)
-        plt.show()

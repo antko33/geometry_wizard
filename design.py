@@ -6,9 +6,15 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
-from PySide6.QtWidgets import (QLabel, QLineEdit, QPushButton, QSizePolicy, QStatusBar, QWidget)
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
+    QPushButton, QSizePolicy, QStatusBar, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -355,25 +361,20 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         QMetaObject.connectSlotsByName(MainWindow)
-
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow",
-                                                             u"\u0412\u044b\u0447\u0438\u0441\u043b\u0438\u0442\u0435\u043b\u044c \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u0445\u0430\u0440\u0430\u043a\u0442\u0435\u0440\u0438\u0441\u0442\u0438\u043a",
-                                                             None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u0447\u0438\u0441\u043b\u0438\u0442\u0435\u043b\u044c \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u0445\u0430\u0440\u0430\u043a\u0442\u0435\u0440\u0438\u0441\u0442\u0438\u043a", None))
         self.solveBtn.setText(QCoreApplication.translate("MainWindow", u"\u0420\u0435\u0448\u0438\u0442\u044c", None))
         self.label_39.setText(QCoreApplication.translate("MainWindow", u"\u043c\u043c", None))
         self.label_40.setText(QCoreApplication.translate("MainWindow", u"t =", None))
         self.label_41.setText(QCoreApplication.translate("MainWindow", u"\u043c\u043c", None))
-        self.label_42.setText(QCoreApplication.translate("MainWindow",
-                                                         u"<html><head/><body><p>L<span style=\" vertical-align:sub;\">\u043e\u0442</span> =</p></body></html>",
-                                                         None))
+        self.label_42.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>L<span style=\" vertical-align:sub;\">\u043e\u0442</span> =</p></body></html>", None))
         self.label_43.setText(QCoreApplication.translate("MainWindow", u"R<sub>\u0432\u043d</sub> =", None))
         self.label_44.setText(QCoreApplication.translate("MainWindow", u"L<sub>\u0441\u0442<sub/>", None))
         self.label_45.setText(QCoreApplication.translate("MainWindow", u"\u043c\u043c", None))
         self.label_46.setText(QCoreApplication.translate("MainWindow", u"\u043c\u043c", None))
-        self.label_47.setText(QCoreApplication.translate("MainWindow", u"W<sub>x</sub> =", None))
+        self.label_47.setText(QCoreApplication.translate("MainWindow", u"W<sub>y</sub> =", None))
         self.label_48.setText(QCoreApplication.translate("MainWindow", u"\u0441\u043c<sup>3</sup>", None))
         self.label_49.setText(QCoreApplication.translate("MainWindow", u"\u0441\u043c", None))
         self.label_50.setText(QCoreApplication.translate("MainWindow", u"S<sub>y</sub> =", None))
@@ -404,3 +405,4 @@ class Ui_MainWindow(object):
         self.label_75.setText(QCoreApplication.translate("MainWindow", u"A =", None))
         self.label_76.setText(QCoreApplication.translate("MainWindow", u"\u0441\u043c<sup>2</sup>", None))
     # retranslateUi
+

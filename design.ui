@@ -284,7 +284,7 @@
      </sizepolicy>
     </property>
     <property name="text">
-     <string>W&lt;sub&gt;x&lt;/sub&gt; =</string>
+     <string>W&lt;sub&gt;y&lt;/sub&gt; =</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_48">

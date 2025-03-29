@@ -1,5 +1,6 @@
 import sys
 
+from PIL.ImageQt import QPixmap
 from PySide6.QtWidgets import QMainWindow, QApplication
 
 from calculations_module import CalculationsModule
@@ -11,7 +12,12 @@ class GeometryWizard(QMainWindow):
         super(GeometryWizard, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setFixedSize(490, 340)
+        self.setFixedSize(self.width(), self.height())
+
+        pixmap = QPixmap("res/scheme.png")
+        self.ui.picLabel.setPixmap(pixmap.scaled(
+            self.ui.picLabel.size())
+        )
 
         self.calculationsModule = CalculationsModule()
 

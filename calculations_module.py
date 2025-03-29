@@ -133,7 +133,7 @@ class CalculationsModule:
         bx = r * math.sin(fi / 2.0)
         by = -r * math.cos(fi / 2.0)
 
-        alpha2 = self.__alpha2 - fi / 2.0
+        alpha2 = (math.pi - fi) / 2.0
 
         cx = bx + self.l_st * math.sin(alpha2)
         cy = by - self.l_st * math.cos(alpha2)
